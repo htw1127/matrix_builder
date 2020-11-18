@@ -1,4 +1,3 @@
-
 from MyMatrix import *
 
 class MatrixBook:
@@ -213,7 +212,7 @@ class MatrixBook:
                     continue
                 elif m.grid_pos[0] < 0 or m.grid_pos[1] < 0:
                     m.error_highlight()
-                elif m.grid_pos[0] + m.dimension[0] > self.row or m.grid_pos[1] + m.dimension[1] > self.col:
+                elif m.grid_pos[0] + m.dimension[0] > self.col or m.grid_pos[1] + m.dimension[1] > self.row:
                     m.error_highlight()
 
 
