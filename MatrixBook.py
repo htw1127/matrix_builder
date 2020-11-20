@@ -23,6 +23,9 @@ class MatrixBook:
         self.matrix_canvas.focus_force()
 
     def draw_grid(self, scale):
+        for l in self.grid_line_list:
+            self.matrix_canvas.delete(l)
+
         for r in range(self.row + 1):
             row_line_len = scale * self.col
             line = self.matrix_canvas.create_line(self.offset[0], self.offset[1] + r*scale, self.offset[0] + row_line_len, self.offset[1] + r*scale, fill='gray')
@@ -33,6 +36,8 @@ class MatrixBook:
             line = self.matrix_canvas.create_line(self.offset[0] + c*scale, self.offset[1], self.offset[0] + c*scale, self.offset[1] + col_line_len, fill='gray')
             self.grid_line_list.append(line)
 
+        for m in self.matrix_list:
+            m.raise_matrix()
 
     """
     matrix_canvas: canvas for MyMatrix's
@@ -84,8 +89,6 @@ class MatrixBook:
         self.pressed_matrix.append(matx)
         matx.pressed_config()
         for m in self.pressed_matrix:
-            self.matrix_canvas.tag_raise(m.shape)
-            self.matrix_canvas.tag_raise(m.text_shape)
             m.set_anchor(anchor)
 
     def in_shape_range(self, pos, shape):

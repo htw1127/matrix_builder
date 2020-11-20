@@ -11,6 +11,7 @@ class MyMatrix:
         offset_x = (x2 - x1) // 2
         offset_y = (y2 - y1) // 2
         self.text_shape = self.canvas.create_text(x1 + offset_x, y1 + offset_y, text=self.text)
+        self.normal_highlight()
 
 
     """
@@ -47,6 +48,9 @@ class MyMatrix:
 
         self.pos = (self.pos[0] + dx, self.pos[1] + dy)
 
+    def raise_matrix(self):
+        self.canvas.tag_raise(self.shape)
+        self.canvas.tag_raise(self.text_shape)
 
     def normal_highlight(self):
         self.released_config()
@@ -58,6 +62,7 @@ class MyMatrix:
     def pressed_config(self):
         self.canvas.itemconfig(self.shape, fill='black')
         self.canvas.itemconfig(self.text_shape, fill="white")
+        self.raise_matrix()
 
     def released_config(self):
         self.canvas.itemconfig(self.shape, fill='white')
