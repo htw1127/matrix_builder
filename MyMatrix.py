@@ -13,15 +13,14 @@ class MyMatrix:
         self.text_shape = self.canvas.create_text(x1 + offset_x, y1 + offset_y, text=self.text)
         self.normal_highlight()
 
-
     """
     Redo this comment.
     """
-    def __init__(self, scale, dimension, pos, canvas, text=None):
+    def __init__(self, scale, dimension, pos, grid_pos, canvas, text=None):
         self.scale = scale
         self.dimension = dimension
         self.pos = pos
-        self.grid_pos = None
+        self.grid_pos = grid_pos
         self.canvas = canvas
         self.text = text
         self.anchor = None

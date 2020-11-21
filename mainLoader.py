@@ -1,6 +1,6 @@
 from utils import *
 
-row, col, matrix_dict = load_matrix('temp')
+row, col, matrix_dict = read_matrix('temp')
 
 matrix_realize = {}
 for name in matrix_dict.keys():

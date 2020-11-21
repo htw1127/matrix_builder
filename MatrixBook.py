@@ -1,5 +1,6 @@
 from MyMatrix import *
 
+
 class MatrixBook:
 
     """
@@ -70,26 +71,31 @@ class MatrixBook:
         self.draw_grid(self.scale_factor)
 
     def add_matrix(self):
-        self.add_custom_matrix(2, 2)
+        self.add_custom_matrix((2, 2))
 
-    def add_custom_matrix(self, row, col, name=None):
-        ## todo: generalize x and y
-        x = 300
-        y = 200
-
+    def add_custom_matrix(self, dim, name=None, pos=None):
+        grid_pos = self.pos_to_grid(pos)
+        pos = self.grid_to_pos(grid_pos)
         if not name:
             name = f'M{len(self.matrix_list)}'
 
-        result_matx = MyMatrix(self.scale_factor, (row, col), (x, y), self.matrix_canvas, name)
+        result_matx = MyMatrix(self.scale_factor, dim, pos, grid_pos, self.matrix_canvas, name)
         self.matrix_list.append(result_matx)
 
+    def set_pressed_matrix(self, matx, anchor=None):
+        if not (matx in self.pressed_matrix):
+            self.pressed_matrix.append(matx)
+            matx.pressed_config()
 
-
-    def set_pressed_matrix(self, matx, anchor):
-        self.pressed_matrix.append(matx)
-        matx.pressed_config()
         for m in self.pressed_matrix:
             m.set_anchor(anchor)
+
+    def set_released_matrix(self, matx):
+        if matx in self.pressed_matrix:
+            self.pressed_matrix.remove(matx)
+        matx.anchor = None
+        matx.released_config()
+
 
     def in_shape_range(self, pos, shape):
         x1, y1, x2, y2 = self.matrix_canvas.coords(shape)
@@ -110,8 +116,10 @@ class MatrixBook:
 
     def copy_matx(self, matx):
         offset = self.scale_factor
-        new_pos = (matx.pos[0] + offset, matx.pos[1] + offset)
-        result = MyMatrix(self.scale_factor, matx.dimension, new_pos, self.matrix_canvas, matx.text)
+        copy_grid_pos = self.pos_to_grid((matx.pos[0] + offset, matx.pos[1] + offset))
+        copy_pos = self.grid_to_pos(copy_grid_pos)
+
+        result = MyMatrix(self.scale_factor, matx.dimension, copy_pos, copy_grid_pos, self.matrix_canvas, matx.text)
         self.matrix_list.append(result)
 
         return result
@@ -187,16 +195,13 @@ class MatrixBook:
                 self.set_pressed_matrix(matx, press_pos)
                 return
 
-        ## If there is not any box clicked, assume in multiple selection mode.
-        self.is_multi_selecting = True
-        self.selection_box = self.matrix_canvas.create_rectangle(e.x, e.y, e.x, e.y, fill='skyblue', stipple='gray25')
-        self.selection_box_anchor = (e.x, e.y)
-
     def release_LMB(self, e):
-        # Check if I am NOT in the middle of selection by pressing CTRL
-        if not self.is_selecting:
-            self.follow_grid()
+        self.follow_grid()
+        if not self.is_moving_offset and not self.is_multi_selecting and not self.is_selecting:
+            self.pressed_matrix = []
 
+        # Check if I am NOT in the middle of selection by pressing CTRL
+        if not self.is_selecting and not self.is_multi_selecting:
             for m in self.matrix_list:
                 m.set_anchor(None)
                 m.released_config()
@@ -218,9 +223,6 @@ class MatrixBook:
                 elif m.grid_pos[0] + m.dimension[1] > self.col or m.grid_pos[1] + m.dimension[0] > self.row:
                     m.error_highlight()
 
-
-            self.pressed_matrix = []
-
         # Checks if I am in the middle of multi-selecting with the blue selection box
         if self.is_multi_selecting:
             x1, y1, x2, y2 = self.matrix_canvas.coords(self.selection_box)
@@ -236,7 +238,7 @@ class MatrixBook:
                 l2 = (x1, y1)
                 r2 = (x2, y2)
                 if self.is_overlap(l1, r1, l2, r2):
-                    self.set_pressed_matrix(m, None)
+                    self.set_pressed_matrix(m)
 
 
             self.is_multi_selecting = False
@@ -253,8 +255,7 @@ class MatrixBook:
 
         for matx in new_pressed_matx:
             temp = self.copy_matx(matx)
-            self.set_pressed_matrix(temp, None)
-
+            self.set_pressed_matrix(temp)
 
     def ctrl_press_LMB(self, e):
         self.is_selecting = True
@@ -262,18 +263,21 @@ class MatrixBook:
         for matx in self.matrix_list:
             press_pos = (e.x, e.y)
             if self.in_shape_range(press_pos, matx.shape):
-                self.set_pressed_matrix(matx, press_pos)
-                break
+                if matx in self.pressed_matrix:
+                    self.set_released_matrix(matx)
+                else:
+                    self.set_pressed_matrix(matx)
+                return
+
+        # If there is not any box clicked, assume in multiple selection mode.
+        self.is_multi_selecting = True
+        self.selection_box = self.matrix_canvas.create_rectangle(e.x, e.y, e.x, e.y, fill='skyblue', stipple='gray25')
+        self.selection_box_anchor = (e.x, e.y)
 
     def ctrl_release(self, e):
         self.is_selecting = False
 
     def move(self, e):
-        if not self.is_selecting:
-            for m in self.pressed_matrix:
-                if m.anchor:
-                    m.move_matrix((e.x, e.y))
-
         if self.is_multi_selecting:
             x, y = self.selection_box_anchor
             self.matrix_canvas.coords(self.selection_box, x, y, e.x, e.y)
@@ -289,3 +293,10 @@ class MatrixBook:
 
             for l in self.grid_line_list:
                 self.matrix_canvas.move(l, dx, dy)
+
+        if self.is_selecting or self.is_moving_offset or self.is_multi_selecting:
+            return
+
+        for m in self.pressed_matrix:
+            if m.anchor:
+                m.move_matrix((e.x, e.y))
