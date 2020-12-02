@@ -89,24 +89,33 @@ class MatrixBuilder:
         w = 600
         h = 600
         self.matx_canvas = Canvas(self.master, width=w, height=h, bg='white')
-        self.matx_canvas.grid(row=0, column=0, rowspan=20, padx=20, pady=20)
+        self.matx_canvas.grid(row=0, column=0, rowspan=50, padx=20, pady=20)
         self.matx_book = MatrixBook(self.matx_canvas, 20, 20)
 
         """ Create canvas where user can interact with GUI. """
-
+        row_label = Label(self.master, text="Row: ", font='Helvetica 8 bold')
+        col_label = Label(self.master, text="Col: ", font='Helvetica 8 bold')
+        name_label = Label(self.master, text="Name: ", font='Helvetica 8 bold')
         self.row_entry = Entry(self.master, width=20)
         self.col_entry = Entry(self.master, width=20)
         self.name_entry = Entry(self.master, width=20)
-        self.row_entry.grid(row=0, column=1)
-        self.col_entry.grid(row=1, column=1)
-        self.name_entry.grid(row=2, column=1)
+        row_label.grid(row=0, column=1)
+        col_label.grid(row=1, column=1)
+        name_label.grid(row=2, column=1)
+        self.row_entry.grid(row=0, column=2)
+        self.col_entry.grid(row=1, column=2)
+        self.name_entry.grid(row=2, column=2)
 
         butt_custom = Button(self.master, text='ADD the CUSTOM matrix!', command=self.create_custom_matx)
         butt_std = Button(self.master, text='ADD the DEFAULT matrix!', command=self.create_default_matx)
         butt_delete = Button(self.master, text='DELETE Selected matrix!!!', command=self.delete_button)
-        butt_custom.grid(row=3, column=1, pady=5, padx=5)
-        butt_std.grid(row=4, column=1, pady=5, padx=5)
-        butt_delete.grid(row=6, column=1, pady=5, padx=5)
+        butt_zoom_in = Button(self.master, text='Zoom In', command=lambda: self.matx_book.zoom(self.matx_book.scale_factor + 5))
+        butt_zoom_out = Button(self.master, text='Zoom Out', command=lambda: self.matx_book.zoom(self.matx_book.scale_factor - 5))
+        butt_custom.grid(row=3, column=1, pady=5, columnspan=2)
+        butt_std.grid(row=4, column=1, pady=5, columnspan=2)
+        butt_delete.grid(row=5, column=1, pady=5, columnspan=2)
+        butt_zoom_in.grid(row=6, column=1, pady=5)
+        butt_zoom_out.grid(row=6, column=2, pady=5, padx=2)
 
         self.status = Label(self.master, text='Hello there, Welcome!', bd=1, relief=SUNKEN)
         self.status.grid(row=100, column=0)
@@ -123,6 +132,7 @@ class MatrixBuilder:
         menu.add_cascade(label='File', menu=file_menu)
         file_menu.add_cascade(label='Save', command=self.save_matrix)
         file_menu.add_cascade(label='Load', command=self.load_matrix)
+        file_menu.add_cascade(label='Python File', command=self.python_save_matrix)
 
     """ Some other user widgets. """
     def create_default_matx(self):
@@ -229,6 +239,25 @@ class MatrixBuilder:
                 self.create_custom_matx(dim, name, pos)
 
                 f_line = f.readline()
+
+    # output file requires string to numpy array dictionary
+    def python_save_matrix(self, def_name='matrix_func'):
+        result_code = f'def {def_name}(matrix_dict):\n'
+        result_code+= f'\tresult = np.zeros(({self.matx_book.row}, {self.matx_book.col}))\n'
+        result_code+= f'\n'
+
+        for m in self.matx_book.matrix_list:
+            slicing = f'{m.grid_pos[1]}:{m.grid_pos[1] + m.dimension[0]},{m.grid_pos[0]}:{m.grid_pos[0] + m.dimension[1]}'
+            result_code += f'\tresult[{slicing}] = matrix_dict[\'{m.text}\']\n'
+
+        result_code+= f'\n'
+        result_code+= f'\treturn result\n'
+
+        with open(f'output/{def_name}.py', 'w') as f:
+            f.write(result_code)
+
+
+
 
 
 def main():

@@ -1,11 +1,13 @@
 import numpy as np
-
+from scipy import sparse
 
 """
 NOTE
 Format of the savings
 NAME Y_POS X_POS HEIGHT(row) WIDTH(col)
 """
+
+
 
 
 def read_matrix(file_name):
@@ -39,5 +41,17 @@ def realize_matrix(row, col, matrix_dict, matrix_realize_dict):
         for pos in pos_list:
             pos_row, pos_col = pos
             result_matrix[pos_row:(pos_row + sub_row), pos_col:(pos_col + sub_col)] = sub_matrix
+
+    return result_matrix
+
+
+def sparse_matrix(matrix):
+    return sparse.csr_matrix(matrix)
+
+def matrix_func(matrix_dict):
+    result_matrix = np.zeroes(('rows', 'cols'))
+
+    result_matrix[0:2,0:2] = matrix_dict['M0']
+    result_matrix[2:6,2:6] = matrix_dict['M1']
 
     return result_matrix

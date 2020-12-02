@@ -156,14 +156,20 @@ class MatrixBook:
             if matx in self.pressed_matrix:
                 self.pressed_matrix.remove(matx)
 
-    def zoom(self, scale):
-        if not scale:
+    def zoom(self, scale, pivot=None):
+        if scale is None or scale <= 0:
             print('Please input value scale input!')
             return
 
         self.matrix_canvas.delete('all')
-        self.draw_grid(scale)
+        if pivot:
+            fine_grid_pos = ((pivot[0] - self.offset[0]) / self.scale_factor, (pivot[1] - self.offset[1]) / self.scale_factor)
+            temp = scale - self.scale_factor
+            diff = (fine_grid_pos[0] * temp, fine_grid_pos[1] * temp)
+            self.offset = (self.offset[0] - diff[0], self.offset[1] - diff[1])
         self.scale_factor = scale
+
+        self.draw_grid(scale)
 
         for m in self.matrix_list:
             m.pos = self.grid_to_pos(m.grid_pos)
@@ -180,9 +186,9 @@ class MatrixBook:
 
     def ctrl_wheel(self, e):
         if e.delta > 0:
-            self.zoom(self.scale_factor + 5)
+            self.zoom(self.scale_factor + 5, (e.x, e.y))
         elif e.delta < 0:
-            self.zoom(self.scale_factor - 5)
+            self.zoom(self.scale_factor - 5, (e.x, e.y))
 
     def pressed_delete(self, e):
         self.delete_matrix(self.pressed_matrix)
