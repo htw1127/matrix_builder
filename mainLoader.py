@@ -13,7 +13,7 @@ A = realize_matrix(row, col, matrix_dict, matrix_realize)
 print(A)
 print(sparse_matrix(A))
 
-
+"""
 def matrix_func(matrix_dict):
 	result = np.zeros((20, 10))
 
@@ -24,7 +24,7 @@ def matrix_func(matrix_dict):
 	result[7:9,6:8] = matrix_dict['M4']
 
 	return result
-
+"""
 
 
 temp = dict()
