@@ -1,5 +1,6 @@
 from utils import *
 
+# Example 1
 row, col, matrix_dict = read_matrix('temp')
 
 matrix_realize = {}
@@ -13,26 +14,31 @@ A = realize_matrix(row, col, matrix_dict, matrix_realize)
 print(A)
 print(sparse_matrix(A))
 
-"""
+# Example 2
 def matrix_func(matrix_dict):
-	result = np.zeros((20, 10))
+	result = np.zeros((13, 7))
 
-	result[0:2,0:2] = matrix_dict['M0']
-	result[2:6,2:6] = matrix_dict['M1']
-	result[14:16,1:3] = matrix_dict['M2']
-	result[16:18,8:10] = matrix_dict['M3']
-	result[7:9,6:8] = matrix_dict['M4']
+	result[0:3, 0:1] = matrix_dict['M1']
+	result[5:7, 0:2] = matrix_dict['M4']
+	result[10:13, 5:7] = -1 * matrix_dict['testing'].T
+	result[9:12, 1:2] = matrix_dict['M3'].T
+	result[3:4, 4:7] = -1 * matrix_dict['M5']
+	result[3:5, 1:3] = -1 * matrix_dict['M0'].T
 
 	return result
-"""
+
+
+
+
 
 
 temp = dict()
 temp['M0'] = 10 * np.ones((2, 2))
-temp['M1'] = 11 * np.ones((4, 4))
-temp['M2'] = 20 * np.ones((2, 2))
-temp['M3'] = 30 * np.ones((2, 2))
-temp['M4'] = 40 * np.ones((2, 2))
+temp['M1'] = 11 * np.ones((3, 1))
+temp['M3'] = np.array([[1, 2, 3]])
+temp['M4'] = 44 * np.ones((2, 2))
+temp['M5'] = 55 * np.ones((1, 3))
+temp['testing'] = np.arange(6).reshape((2, 3))
 A = matrix_func(temp)
 print(A)
 

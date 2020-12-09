@@ -1,5 +1,6 @@
 from MatrixBook import *
 
+
 class MyDialog:
     def __init__(self, parent, input_type):
         self.parent = parent
@@ -152,7 +153,7 @@ class MatrixBuilder:
 
         dim = (int(dim[0]), int(dim[1]))
         pos = self.matx_book.grid_to_pos(grid_pos)
-        self.matx_book.add_custom_matrix(dim, name, pos)
+        self.matx_book.add_custom_matrix(dim, pos, name)
 
         self.status.config(text=f'total matrix: {len(self.matx_book.matrix_list)}')
 
@@ -240,18 +241,35 @@ class MatrixBuilder:
 
                 f_line = f.readline()
 
-    # output file requires string to numpy array dictionary
+    # output file requires string ==(to)==> numpy array dictionary
     def python_save_matrix(self, def_name='matrix_func'):
         result_code = f'def {def_name}(matrix_dict):\n'
         result_code+= f'\tresult = np.zeros(({self.matx_book.row}, {self.matx_book.col}))\n'
         result_code+= f'\n'
 
         for m in self.matx_book.matrix_list:
-            slicing = f'{m.grid_pos[1]}:{m.grid_pos[1] + m.dimension[0]},{m.grid_pos[0]}:{m.grid_pos[0] + m.dimension[1]}'
-            result_code += f'\tresult[{slicing}] = matrix_dict[\'{m.text}\']\n'
+            rhs = ''
+            index = m.text
+            if index[0] == '-':
+                index = index[1:]
+            if index[-2:] == '.T':
+                index = index[:-2]
 
-        result_code+= f'\n'
-        result_code+= f'\treturn result\n'
+            if m.text[0] == '-':
+                rhs = f'-1 * matrix_dict[\'{index}\']'
+            else:
+                rhs = f'matrix_dict[\'{index}\']'
+            if m.text[-2:] == '.T':
+                rhs += '.T'
+
+            lhs = ''
+            slicing = f'{m.grid_pos[1]}:{m.grid_pos[1] + m.dimension[0]}, {m.grid_pos[0]}:{m.grid_pos[0] + m.dimension[1]}'
+            lhs = f'result[{slicing}]'
+
+            result_code += f'\t{lhs} = {rhs}\n'
+
+        result_code += f'\n'
+        result_code += f'\treturn result\n'
 
         with open(f'output/{def_name}.py', 'w') as f:
             f.write(result_code)

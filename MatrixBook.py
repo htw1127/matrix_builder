@@ -21,6 +21,7 @@ class MatrixBook:
         self.matrix_canvas.bind('<Delete>', self.pressed_delete)
         self.matrix_canvas.bind('<Control-MouseWheel>', self.ctrl_wheel)
         self.matrix_canvas.bind('<Shift-Button-1>', self.shift_LMB)
+        self.matrix_canvas.bind('<Button-3>', self.press_RMB)
         self.matrix_canvas.focus_force()
 
     def draw_grid(self, scale):
@@ -70,10 +71,7 @@ class MatrixBook:
 
         self.draw_grid(self.scale_factor)
 
-    def add_matrix(self):
-        self.add_custom_matrix((2, 2))
-
-    def add_custom_matrix(self, dim, name=None, pos=None):
+    def add_custom_matrix(self, dim, pos, name=None, ):
         grid_pos = self.pos_to_grid(pos)
         pos = self.grid_to_pos(grid_pos)
         if not name:
@@ -97,8 +95,8 @@ class MatrixBook:
         matx.released_config()
 
 
-    def in_shape_range(self, pos, shape):
-        x1, y1, x2, y2 = self.matrix_canvas.coords(shape)
+    def in_shape_range(self, pos, matrix):
+        x1, y1, x2, y2 = self.matrix_canvas.coords(matrix.shape)
         is_in_y = y1 <= pos[1] <= y2
         is_in_x = x1 <= pos[0] <= x2
         return is_in_x and is_in_y
@@ -156,6 +154,24 @@ class MatrixBook:
             if matx in self.pressed_matrix:
                 self.pressed_matrix.remove(matx)
 
+    def create_transpose(self):
+        for m in self.pressed_matrix:
+            if '.T' == m.text[-2:]:
+                self.add_custom_matrix((m.dimension[1], m.dimension[0]), m.pos, m.text[:-2])
+            else:
+                self.add_custom_matrix((m.dimension[1], m.dimension[0]), m.pos, m.text + '.T')
+
+        self.delete_matrix(self.pressed_matrix)
+
+    def create_negate(self):
+        for m in self.pressed_matrix:
+            if '-' == m.text[0]:
+                self.add_custom_matrix(m.dimension, m.pos, m.text[1:])
+            else:
+                self.add_custom_matrix(m.dimension, m.pos, '-' + m.text)
+
+        self.delete_matrix(self.pressed_matrix)
+
     def zoom(self, scale, pivot=None):
         if scale is None or scale <= 0:
             print('Please input value scale input!')
@@ -193,22 +209,33 @@ class MatrixBook:
     def pressed_delete(self, e):
         self.delete_matrix(self.pressed_matrix)
 
+    def press_RMB(self, e):
+        canvas_menu = Menu(self.matrix_canvas, tearoff=False)
+
+        if not self.pressed_matrix:
+            for m in self.matrix_list:
+                if self.in_shape_range((e.x, e.y), m):
+                    self.set_pressed_matrix(m)
+                    break
+
+        canvas_menu.add_command(label='Transpose', command=self.create_transpose)
+        canvas_menu.add_command(label='Negate', command=self.create_negate)
+        canvas_menu.tk_popup(e.x_root, e.y_root)
+
     def press_LMB(self, e):
         self.matrix_canvas.focus_force()
         for matx in self.matrix_list:
             press_pos = (e.x, e.y)
-            if self.in_shape_range(press_pos, matx.shape):
+            if self.in_shape_range(press_pos, matx):
                 self.set_pressed_matrix(matx, press_pos)
                 return
 
     def release_LMB(self, e):
         self.follow_grid()
-        if not self.is_moving_offset and not self.is_multi_selecting and not self.is_selecting:
-            self.pressed_matrix = []
 
-        # Check if I am NOT in the middle of selection by pressing CTRL
-        if not self.is_selecting and not self.is_multi_selecting:
-            for m in self.matrix_list:
+        # Check if the user is NOT in the middle of selection by pressing CTRL
+        if not self.is_selecting and not self.is_multi_selecting and not self.is_moving_offset:
+            for m in self.pressed_matrix:
                 m.set_anchor(None)
                 m.released_config()
                 for m2 in self.matrix_list:
@@ -219,15 +246,16 @@ class MatrixBook:
 
                     if self.is_overlap((x1, y1), (x2, y2), (x10, y10), (x20, y20)):
                         m.error_highlight()
-                        m2.error_highlight()
 
-            for m in self.matrix_list:
+            for m in self.pressed_matrix:
                 if m.grid_pos is None:
                     continue
                 elif m.grid_pos[0] < 0 or m.grid_pos[1] < 0:
                     m.error_highlight()
                 elif m.grid_pos[0] + m.dimension[1] > self.col or m.grid_pos[1] + m.dimension[0] > self.row:
                     m.error_highlight()
+
+            self.pressed_matrix = []
 
         # Checks if I am in the middle of multi-selecting with the blue selection box
         if self.is_multi_selecting:
@@ -251,6 +279,7 @@ class MatrixBook:
             self.matrix_canvas.delete(self.selection_box)
             self.selection_box = None
 
+        # Check if the user was moving the screen
         if self.is_moving_offset:
             self.is_moving_offset = False
             self.offset_anchor = None
@@ -268,7 +297,7 @@ class MatrixBook:
 
         for matx in self.matrix_list:
             press_pos = (e.x, e.y)
-            if self.in_shape_range(press_pos, matx.shape):
+            if self.in_shape_range(press_pos, matx):
                 if matx in self.pressed_matrix:
                     self.set_released_matrix(matx)
                 else:
