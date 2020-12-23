@@ -94,6 +94,9 @@ class MatrixBook:
         matx.anchor = None
         matx.released_config()
 
+    def release_all_matrix(self):
+        while len(self.pressed_matrix) > 0:
+            self.set_released_matrix(self.pressed_matrix[0])
 
     def in_shape_range(self, pos, matrix):
         x1, y1, x2, y2 = self.matrix_canvas.coords(matrix.shape)
@@ -172,17 +175,17 @@ class MatrixBook:
 
         self.delete_matrix(self.pressed_matrix)
 
-    def zoom(self, scale, pivot=None):
+    def zoom(self, scale, pivot):
         if scale is None or scale <= 0:
             print('Please input value scale input!')
             return
 
         self.matrix_canvas.delete('all')
-        if pivot:
-            fine_grid_pos = ((pivot[0] - self.offset[0]) / self.scale_factor, (pivot[1] - self.offset[1]) / self.scale_factor)
-            temp = scale - self.scale_factor
-            diff = (fine_grid_pos[0] * temp, fine_grid_pos[1] * temp)
-            self.offset = (self.offset[0] - diff[0], self.offset[1] - diff[1])
+
+        fine_grid_pos = ((pivot[0] - self.offset[0]) / self.scale_factor, (pivot[1] - self.offset[1]) / self.scale_factor)
+        temp = scale - self.scale_factor
+        diff = (fine_grid_pos[0] * temp, fine_grid_pos[1] * temp)
+        self.offset = (self.offset[0] - diff[0], self.offset[1] - diff[1])
         self.scale_factor = scale
 
         self.draw_grid(scale)
@@ -210,14 +213,27 @@ class MatrixBook:
         self.delete_matrix(self.pressed_matrix)
 
     def press_RMB(self, e):
+        selected = None
+        for m in self.matrix_list:
+            if self.in_shape_range((e.x, e.y), m):
+                selected = m
+                break
+
+        # When the background is chosen
+        if selected is None:
+            self.release_all_matrix()
+            canvas_menu = Menu(self.matrix_canvas, tearoff=False)
+            canvas_menu.add_command(label='zoom in', command=lambda: self.zoom(self.scale_factor + 5, (e.x_root, e.y_root)))
+            canvas_menu.add_command(label='zoom out', command=lambda: self.zoom(self.scale_factor - 5, (e.x_root, e.y_root)))
+            canvas_menu.tk_popup(e.x_root, e.y_root)
+            return
+
+        # When the matrix is chosen
+        if not (selected in self.pressed_matrix):
+            self.release_all_matrix()
+            self.set_pressed_matrix(selected)
+
         canvas_menu = Menu(self.matrix_canvas, tearoff=False)
-
-        if not self.pressed_matrix:
-            for m in self.matrix_list:
-                if self.in_shape_range((e.x, e.y), m):
-                    self.set_pressed_matrix(m)
-                    break
-
         canvas_menu.add_command(label='Transpose', command=self.create_transpose)
         canvas_menu.add_command(label='Negate', command=self.create_negate)
         canvas_menu.tk_popup(e.x_root, e.y_root)

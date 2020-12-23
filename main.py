@@ -2,7 +2,7 @@ from MatrixBook import *
 
 
 class MyDialog:
-    def __init__(self, parent, input_type):
+    def __init__(self, parent, input_message):
         self.parent = parent
         self.pop = Toplevel(parent)
         self.pop.title("Input Query")
@@ -16,16 +16,7 @@ class MyDialog:
         self.choice_frame.pack(pady=3)
 
         self.welcome_msg = Label(self.intro_frame)
-        head_text = ''
-        if input_type == 'resize':
-            head_text = 'Please Input Dimension of Resize Matrix.'
-        elif input_type == 'reset':
-            head_text = 'Please Input Dimension of Reset Matrix.'
-        elif input_type == 'save':
-            head_text = 'Please Input the Name of this Matrix.'
-        elif input_type == 'load':
-            head_text = 'Please Input the Name of the Matrix to Load.'
-        self.welcome_msg.config(text=head_text)
+        self.welcome_msg.config(text=input_message)
         self.welcome_msg.pack()
 
         done = Button(self.choice_frame, text='Done', command=lambda: self.user_input('done'))
@@ -41,7 +32,12 @@ class MyDialog:
 
 class RowColDialog(MyDialog):
     def __init__(self, parent, input_type):
-        super().__init__(parent, input_type)
+        msg = ''
+        if input_type == 'resize':
+            msg = 'Please Input Dimension of Resize Matrix.'
+        elif input_type == 'reset':
+            msg = 'Please Input Dimension of Reset Matrix.'
+        super().__init__(parent, msg)
 
         pop_label_row = Label(self.query_frame, text="Row: ", font='Helvetica 8 bold')
         pop_label_col = Label(self.query_frame, text="Col: ", font='Helvetica 8 bold')
@@ -66,7 +62,14 @@ class RowColDialog(MyDialog):
 
 class NameDialog(MyDialog):
     def __init__(self, parent, input_type):
-        super().__init__(parent, input_type)
+        msg = ''
+        if input_type == 'resize':
+            msg = 'Please Input the Name of this Matrix.'
+        elif input_type == 'reset':
+            msg = 'Please Input the Name of the Matrix to Load.'
+        elif input_type == 'export':
+            msg = 'Please Input the Name of the Function'
+        super().__init__(parent, msg)
 
         label_name = Label(self.query_frame, text="Name: ", font='Helvetica 8 bold')
         self.entry_name = Entry(self.query_frame, width=15)
@@ -133,7 +136,11 @@ class MatrixBuilder:
         menu.add_cascade(label='File', menu=file_menu)
         file_menu.add_cascade(label='Save', command=self.save_matrix)
         file_menu.add_cascade(label='Load', command=self.load_matrix)
-        file_menu.add_cascade(label='Python File', command=self.python_save_matrix)
+
+        file_menu = Menu(menu, tearoff=False)
+        menu.add_cascade(label='Export', menu=file_menu)
+        file_menu.add_cascade(label='Numpy', command=lambda: self.export_matrix('numpy'))
+        file_menu.add_cascade(label='Sparse (COO)', command=lambda: self.export_matrix('coo'))
 
     """ Some other user widgets. """
     def create_default_matx(self):
@@ -147,7 +154,6 @@ class MatrixBuilder:
         if not name:
             name = self.name_entry.get()
         if not grid_pos:
-            ## todo: generalize pos?
             pos = (300, 200)
             grid_pos = self.matx_book.pos_to_grid(pos)
 
@@ -189,7 +195,7 @@ class MatrixBuilder:
 
     def ask_user(self, input_type):
         dialog_pop = None
-        if input_type == 'save' or input_type == 'load':
+        if input_type == 'save' or input_type == 'load' or input_type == 'export':
             dialog_pop = NameDialog(self.master, input_type)
         elif input_type == 'resize' or input_type == 'reset':
             dialog_pop = RowColDialog(self.master, input_type)
@@ -201,7 +207,7 @@ class MatrixBuilder:
     File I/O methods below
     *** NOTE ***
     Format of the savings
-    NAME Y_POS X_POS HEIGHT(row) WIDTH(col)
+    NAME X_POS Y_POS HEIGHT(row) WIDTH(col)
     """
     def save_matrix(self, file_name=None):
         if not file_name:
@@ -241,9 +247,20 @@ class MatrixBuilder:
 
                 f_line = f.readline()
 
-    # output file requires string ==(to)==> numpy array dictionary
-    def python_save_matrix(self, def_name='matrix_func'):
-        result_code = f'def {def_name}(matrix_dict):\n'
+    def export_matrix(self, format_type):
+        name = self.ask_user('export')
+        if name is None:
+            return
+
+        if format_type == 'numpy':
+            self.export_numpy_matrix(name)
+        elif format_type == 'coo':
+            self.export_coo_matrix(name)
+
+    # output file requires ** string ==(to)==> numpy ** array dictionary
+    def export_numpy_matrix(self, def_name='matrix_func'):
+        result_code = f'import numpy as np\n\n'
+        result_code+= f'def {def_name}(matrix_dict):\n'
         result_code+= f'\tresult = np.zeros(({self.matx_book.row}, {self.matx_book.col}))\n'
         result_code+= f'\n'
 
@@ -274,9 +291,44 @@ class MatrixBuilder:
         with open(f'output/{def_name}.py', 'w') as f:
             f.write(result_code)
 
+    def export_coo_matrix(self, def_name='matrix_func'):
+        result_code = f'import numpy as np\n'
+        result_code+= f'from scipy import sparse\n\n'
+        result_code+= f'def {def_name}(matrix_dict):\n'
+        result_code+= f'\trow_indices = list()\n'
+        result_code+= f'\tcol_indices = list()\n'
+        result_code+= f'\tvalues = list()\n'
+
+        for m in self.matx_book.matrix_list:
+            for r in range(m.dimension[0]):
+                for c in range(m.dimension[1]):
+                    index = self.index_helper(m.text)
+                    value = ''
+                    if m.text[-2:] == '.T':
+                        value += f'matrix_dict[\'{index}\'][{c}, {r}]'
+                    else:
+                        value += f'matrix_dict[\'{index}\'][{r}, {c}]'
+                    if m.text[0] == '-':
+                        value = '-1 * ' + value
+
+                    result_code+= f'\trow_indices.append({m.grid_pos[1] + r})\n'
+                    result_code+= f'\tcol_indices.append({m.grid_pos[0] + c})\n'
+                    result_code+= f'\tvalues.append({value})\n\n'
 
 
+        result_code+= f'\treturn sparse.coo_matrix((np.array(values), (np.array(row_indices), np.array(col_indices))), shape=({self.matx_book.row}, {self.matx_book.col}))\n'
 
+        with open(f'output/{def_name}.py', 'w') as f:
+            f.write(result_code)
+
+    def index_helper(self, index_str):
+        result = index_str
+        if result[0] == '-':
+            result = result[1:]
+        if result[-2:] == '.T':
+            result = result[:-2]
+
+        return result
 
 def main():
     root = Tk()

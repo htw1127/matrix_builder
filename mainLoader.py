@@ -1,20 +1,7 @@
 from utils import *
 
+
 # Example 1
-row, col, matrix_dict = read_matrix('temp')
-
-matrix_realize = {}
-for name in matrix_dict.keys():
-    content = int(name[1:])
-    pos_list, sub_row, sub_col = matrix_dict[name]
-    matrix_realize[name] = np.ones((sub_row, sub_col)) * content
-
-## todo: turn a into a sparce matrix; readup on scipy.sparce.csc_matrix!!
-A = realize_matrix(row, col, matrix_dict, matrix_realize)
-print(A)
-print(sparse_matrix(A))
-
-# Example 2
 def matrix_func(matrix_dict):
 	result = np.zeros((13, 7))
 
@@ -28,10 +15,6 @@ def matrix_func(matrix_dict):
 	return result
 
 
-
-
-
-
 temp = dict()
 temp['M0'] = 10 * np.ones((2, 2))
 temp['M1'] = 11 * np.ones((3, 1))
@@ -40,5 +23,118 @@ temp['M4'] = 44 * np.ones((2, 2))
 temp['M5'] = 55 * np.ones((1, 3))
 temp['testing'] = np.arange(6).reshape((2, 3))
 A = matrix_func(temp)
-print(A)
+print(sparse_matrix(A))
+
+
+# Example 2
+B = realize_numpy_matrix('second', temp)
+print(B)
+#print(realize_coo_matrix('second', temp))
+
+# Example 3
+import numpy as np
+from scipy import sparse
+
+def matrix_func3(matrix_dict):
+	row_indices = list()
+	col_indices = list()
+	values = list()
+	row_indices.append(0)
+	col_indices.append(0)
+	values.append(matrix_dict['M1'][0, 0])
+
+	row_indices.append(1)
+	col_indices.append(0)
+	values.append(matrix_dict['M1'][1, 0])
+
+	row_indices.append(2)
+	col_indices.append(0)
+	values.append(matrix_dict['M1'][2, 0])
+
+	row_indices.append(5)
+	col_indices.append(0)
+	values.append(matrix_dict['M4'][0, 0])
+
+	row_indices.append(5)
+	col_indices.append(1)
+	values.append(matrix_dict['M4'][0, 1])
+
+	row_indices.append(6)
+	col_indices.append(0)
+	values.append(matrix_dict['M4'][1, 0])
+
+	row_indices.append(6)
+	col_indices.append(1)
+	values.append(matrix_dict['M4'][1, 1])
+
+	row_indices.append(10)
+	col_indices.append(5)
+	values.append(-1 * matrix_dict['testing'][0, 0])
+
+	row_indices.append(10)
+	col_indices.append(6)
+	values.append(-1 * matrix_dict['testing'][1, 0])
+
+	row_indices.append(11)
+	col_indices.append(5)
+	values.append(-1 * matrix_dict['testing'][0, 1])
+
+	row_indices.append(11)
+	col_indices.append(6)
+	values.append(-1 * matrix_dict['testing'][1, 1])
+
+	row_indices.append(12)
+	col_indices.append(5)
+	values.append(-1 * matrix_dict['testing'][0, 2])
+
+	row_indices.append(12)
+	col_indices.append(6)
+	values.append(-1 * matrix_dict['testing'][1, 2])
+
+	row_indices.append(9)
+	col_indices.append(1)
+	values.append(matrix_dict['M3'][0, 0])
+
+	row_indices.append(10)
+	col_indices.append(1)
+	values.append(matrix_dict['M3'][0, 1])
+
+	row_indices.append(11)
+	col_indices.append(1)
+	values.append(matrix_dict['M3'][0, 2])
+
+	row_indices.append(3)
+	col_indices.append(4)
+	values.append(-1 * matrix_dict['M5'][0, 0])
+
+	row_indices.append(3)
+	col_indices.append(5)
+	values.append(-1 * matrix_dict['M5'][0, 1])
+
+	row_indices.append(3)
+	col_indices.append(6)
+	values.append(-1 * matrix_dict['M5'][0, 2])
+
+	row_indices.append(3)
+	col_indices.append(1)
+	values.append(-1 * matrix_dict['M0'][0, 0])
+
+	row_indices.append(3)
+	col_indices.append(2)
+	values.append(-1 * matrix_dict['M0'][1, 0])
+
+	row_indices.append(4)
+	col_indices.append(1)
+	values.append(-1 * matrix_dict['M0'][0, 1])
+
+	row_indices.append(4)
+	col_indices.append(2)
+	values.append(-1 * matrix_dict['M0'][1, 1])
+
+	return sparse.coo_matrix((np.array(values), (np.array(row_indices), np.array(col_indices))), shape=(13, 7))
+
+
+
+C = matrix_func3(temp)
+print(C.toarray())
 
