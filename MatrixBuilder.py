@@ -5,12 +5,14 @@ from MyDialog import *
 class MatrixBuilder:
     def __init__(self, master):
         self.master = master
+        master.bind('<Configure>', self.resize_canvas)
 
         w = 600
         h = 600
-        self.matx_canvas = tk.Canvas(self.master, width=w, height=h, bg='white')
-        self.matx_canvas.grid(row=0, column=0, rowspan=50, padx=20, pady=20)
-        self.matx_book = MatrixBook(self.matx_canvas, 20, 20)
+        matx_canvas = tk.Canvas(self.master, width=w, height=h, bg='white')
+        matx_canvas.grid(row=0, column=0, rowspan=50, padx=20, pady=20)
+        self.master.update_idletasks() # Another Strange Magic Solution
+        self.matx_book = MatrixBook(self, matx_canvas, 20, 20)
 
         """ Create canvas where user can interact with GUI. """
         row_label = tk.Label(self.master, text="Row: ", font='Helvetica 8 bold')
@@ -26,16 +28,16 @@ class MatrixBuilder:
         self.col_entry.grid(row=1, column=2)
         self.name_entry.grid(row=2, column=2)
 
-        butt_custom = tk.Button(self.master, text='ADD the CUSTOM matrix!', command=self.create_custom_matx)
-        butt_std = tk.Button(self.master, text='ADD the DEFAULT matrix!', command=self.create_default_matx)
-        butt_delete = tk.Button(self.master, text='DELETE Selected matrix!!!', command=self.delete_button)
+        butt_custom = tk.Button(self.master, text='ADD the custom matrix', command=self.create_custom_matx)
+        #butt_std = tk.Button(self.master, text='ADD the DEFAULT matrix!', command=self.create_default_matx)
+        butt_delete = tk.Button(self.master, text='DELETE selected matrix', command=self.delete_button)
         butt_zoom_in = tk.Button(self.master, text='Zoom In', command=lambda: self.matx_book.zoom(self.matx_book.scale_factor + 5))
         butt_zoom_out = tk.Button(self.master, text='Zoom Out', command=lambda: self.matx_book.zoom(self.matx_book.scale_factor - 5))
         butt_custom.grid(row=3, column=1, pady=5, columnspan=2)
-        butt_std.grid(row=4, column=1, pady=5, columnspan=2)
-        butt_delete.grid(row=5, column=1, pady=5, columnspan=2)
-        butt_zoom_in.grid(row=6, column=1, pady=5)
-        butt_zoom_out.grid(row=6, column=2, pady=5, padx=2)
+        #butt_std.grid(row=4, column=1, pady=5, columnspan=2)
+        butt_delete.grid(row=4, column=1, pady=5, columnspan=2)
+        butt_zoom_in.grid(row=5, column=1, pady=5)
+        butt_zoom_out.grid(row=5, column=2, pady=5, padx=2)
 
         self.status = tk.Label(self.master, text='Hello there, Welcome!', bd=1, relief=tk.SUNKEN)
         self.status.grid(row=100, column=0)
@@ -58,31 +60,57 @@ class MatrixBuilder:
         file_menu.add_cascade(label='Numpy', command=lambda: self.export_matrix('numpy'))
         file_menu.add_cascade(label='Sparse (COO)', command=lambda: self.export_matrix('coo'))
 
+    def resize_canvas(self, e):
+        new_width = self.master.winfo_width() - 400
+        new_height = self.master.winfo_height() - 100
+        self.matx_book.get_canvas().config(width=new_width, height=new_height)
+
+    def get_dimension_entry(self):
+        row = self.row_entry.get()
+        col = self.col_entry.get()
+
+        if not(row.isdigit()) or not (col.isdigit()):
+            self.update_status('Please input valid arguments for row and column entries.')
+            return None
+        return int(row), int(col)
+
+    def get_name_entry(self):
+        name = self.name_entry.get()
+        if len(name.split()) > 1:
+            self.update_status('Name cannot contain any whitespace.')
+            return None
+        elif len(name.split()) == 0:
+            self.update_status('Please provide a name for your sub-matrix.')
+
+        return name
+
     """ Some other user widgets. """
+    # todo: this function is obsolete. delete soon
     def create_default_matx(self):
         self.create_custom_matx((2, 2))
-
-        self.status.config(text=f'total matrix: {len(self.matx_book.matrix_list)}')
+        self.update_status(f'Total matrix: {len(self.matx_book.matrix_list)}')
 
     def create_custom_matx(self, dim=None, name=None, grid_pos=None):
         if not dim:
-            dim = (int(self.row_entry.get()), int(self.col_entry.get()))
+            dim = self.get_dimension_entry()
+            if dim is None:
+                return
         if not name:
-            name = self.name_entry.get()
+            name = self.get_name_entry()
+            if name is None:
+                return
         if not grid_pos:
-            pos = (300, 200)
+            pos = (self.matx_book.get_canvas().winfo_width() // 2, self.matx_book.get_canvas().winfo_height() // 2)
             grid_pos = self.matx_book.pos_to_grid(pos)
 
-        dim = (int(dim[0]), int(dim[1]))
         pos = self.matx_book.grid_to_pos(grid_pos)
         self.matx_book.add_custom_matrix(dim, pos, name)
 
-        self.status.config(text=f'total matrix: {len(self.matx_book.matrix_list)}')
+        self.update_status(f'Total matrix: {len(self.matx_book.matrix_list)}')
 
     def delete_button(self):
         self.matx_book.delete_matrix(self.matx_book.pressed_matrix)
 
-        self.status.config(text=f'total matrix: {len(self.matx_book.matrix_list)}')
 
     def reset(self, size=None):
         if not size:
@@ -92,9 +120,12 @@ class MatrixBuilder:
         row_size, col_size = int(size[0]), int(size[1])
 
         self.matx_book.delete_matrix(self.matx_book.matrix_list)
-        self.matx_book.matrix_canvas.delete('all')
+        self.matx_book.get_canvas().delete('all')
 
-        self.matx_book = MatrixBook(self.matx_canvas, int(row_size), int(col_size))
+        self.matx_book = MatrixBook(self, self.matx_book.get_canvas(), int(row_size), int(col_size))
+
+        new_dim = self.matx_book.get_dimension()
+        self.update_status(f'Reset Successful! Current Matrix Size is: ({new_dim[0]}, {new_dim[1]})')
 
     def resize(self, size=None):
         query_output = size
@@ -109,6 +140,9 @@ class MatrixBuilder:
         self.matx_book.col = int(col)
         self.matx_book.draw_grid(self.matx_book.scale_factor)
 
+        new_dim = self.matx_book.get_dimension()
+        self.update_status(f'Resize Successful! Current Matrix Size is: ({new_dim[0]}, {new_dim[1]})')
+
     def ask_user(self, input_type):
         dialog_pop = None
         if input_type == 'save' or input_type == 'load' or input_type == 'export':
@@ -118,6 +152,10 @@ class MatrixBuilder:
 
         self.master.wait_window(dialog_pop.pop)
         return dialog_pop.query_output
+
+    def update_status(self, new_msg):
+        self.status.config(text=new_msg)
+
 
     """
     File I/O methods below
@@ -144,6 +182,8 @@ class MatrixBuilder:
         f.write(matx_data)
         f.close()
 
+        self.update_status(f'Save Successful! Current matrix saved as: {file_name}.txt')
+
     def load_matrix(self, file_name=None):
         if not file_name:
             file_name = self.ask_user('load')
@@ -163,6 +203,8 @@ class MatrixBuilder:
 
                 f_line = f.readline()
 
+        self.update_status(f'Load Successful! Current matrix is from: {file_name}.txt')
+
     def export_matrix(self, format_type):
         name = self.ask_user('export')
         if name is None:
@@ -172,6 +214,8 @@ class MatrixBuilder:
             self.export_numpy_matrix(name)
         elif format_type == 'coo':
             self.export_coo_matrix(name)
+
+        self.update_status(f'Export Successful!')
 
     # output file requires ** string ==(to)==> numpy ** array dictionary
     def export_numpy_matrix(self, def_name='matrix_func'):

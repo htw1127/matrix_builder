@@ -67,9 +67,19 @@ class MyMatrix:
         self.canvas.itemconfig(self.shape, fill='white')
         self.canvas.itemconfig(self.text_shape, fill='black')
 
+    def re_draw(self):
+        self.draw_matrix(self.scale, self.dimension[0], self.dimension[1], self.pos[0], self.pos[1])
 
+    def rename(self, new_name):
+        self.text = new_name
+        self.canvas.delete(self.shape)
+        self.canvas.delete(self.text_shape)
 
+        self.re_draw()
 
+    def resize(self, new_dimension):
+        self.dimension = new_dimension
+        self.canvas.delete(self.shape)
+        self.canvas.delete(self.text_shape)
 
-
-
+        self.re_draw()

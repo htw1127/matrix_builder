@@ -51,12 +51,13 @@ class MatrixBook:
     selection_box: temporary rectangle for the BLUE Selection Box
     selection_box_anchor: box's anchor
     """
-    def __init__(self, canvas, row=60, col=60):
+    def __init__(self, main_window, canvas, row=60, col=60):
+        self.main_window = main_window
+
         self.matrix_canvas = canvas
         self.pressed_matrix = []
         self.matrix_list = []
         self.grid_line_list = []
-        self.canvas_bind()
         self.is_selecting = False
         self.offset = (0, 0)
         self.is_moving_offset = False
@@ -68,23 +69,32 @@ class MatrixBook:
 
         self.row = row
         self.col = col
-        self.scale_factor = min(600 // row, 600 // col)
+        self.scale_factor = min(canvas.winfo_height() // row, canvas.winfo_width() // col)
 
+        self.canvas_bind()
         self.draw_grid(self.scale_factor)
 
-    def add_custom_matrix(self, dim, pos, name=None, ):
+    def get_dimension(self):
+        return self.row, self.col
+
+    def get_canvas(self):
+        return self.matrix_canvas
+
+    def add_custom_matrix(self, dim, pos, name=None):
         grid_pos = self.pos_to_grid(pos)
         pos = self.grid_to_pos(grid_pos)
         if not name:
             name = f'M{len(self.matrix_list)}'
 
         result_matx = MyMatrix(self.scale_factor, dim, pos, grid_pos, self.matrix_canvas, name)
-        self.matrix_list.append(result_matx)
+        self.matrix_list.insert(0, result_matx)
 
     def set_pressed_matrix(self, matx, anchor=None):
         if not (matx in self.pressed_matrix):
             self.pressed_matrix.append(matx)
             matx.pressed_config()
+        lst = self.matrix_list
+        lst.insert(0, lst.pop(lst.index(matx)))
 
         for m in self.pressed_matrix:
             m.set_anchor(anchor)
@@ -158,6 +168,8 @@ class MatrixBook:
             if matx in self.pressed_matrix:
                 self.pressed_matrix.remove(matx)
 
+        self.main_window.update_status(f'Total matrix: {len(self.matrix_list)}')
+
     def create_transpose(self):
         for m in self.pressed_matrix:
             if '.T' == m.text[-2:]:
@@ -176,7 +188,13 @@ class MatrixBook:
 
         self.delete_matrix(self.pressed_matrix)
 
-    def zoom(self, scale, pivot):
+    def rename_matrix(self):
+        self.pressed_matrix[0].rename(self.main_window.get_name_entry())
+
+    def resize_matrix(self):
+        self.pressed_matrix[0].resize(self.main_window.get_dimension_entry())
+
+    def zoom(self, scale, pivot=(0, 0)):
         if scale is None or scale <= 0:
             print('Please input value scale input!')
             return
@@ -237,6 +255,11 @@ class MatrixBook:
         canvas_menu = tk.Menu(self.matrix_canvas, tearoff=False)
         canvas_menu.add_command(label='Transpose', command=self.create_transpose)
         canvas_menu.add_command(label='Negate', command=self.create_negate)
+        canvas_menu.add_command(label='Delete', command=lambda: self.delete_matrix(self.pressed_matrix))
+        if len(self.pressed_matrix) == 1:
+            canvas_menu.add_command(label='Rename', command=self.rename_matrix)
+            canvas_menu.add_command(label='Resize', command=self.resize_matrix)
+
         canvas_menu.tk_popup(e.x_root, e.y_root)
 
     def press_LMB(self, e):
@@ -352,3 +375,10 @@ class MatrixBook:
         for m in self.pressed_matrix:
             if m.anchor:
                 m.move_matrix((e.x, e.y))
+
+    def on_resize(self, e):
+        new_width = e.width - 400
+        new_height = e.height - 200
+        self.matrix_canvas.config(width=new_width, height=new_height)
+
+
