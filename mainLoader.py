@@ -35,7 +35,7 @@ print(B)
 import numpy as np
 from scipy import sparse
 
-def matrix_func3(matrix_dict):
+def presentation(matrix_dict):
 	row_indices = list()
 	col_indices = list()
 	values = list()
@@ -135,6 +135,6 @@ def matrix_func3(matrix_dict):
 
 
 
-C = matrix_func3(temp)
-print(C.toarray())
+C = presentation(temp)
+print(C)
 

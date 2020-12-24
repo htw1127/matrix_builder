@@ -1,3 +1,4 @@
+import tkinter as tk
 from MyMatrix import *
 
 
@@ -222,7 +223,7 @@ class MatrixBook:
         # When the background is chosen
         if selected is None:
             self.release_all_matrix()
-            canvas_menu = Menu(self.matrix_canvas, tearoff=False)
+            canvas_menu = tk.Menu(self.matrix_canvas, tearoff=False)
             canvas_menu.add_command(label='zoom in', command=lambda: self.zoom(self.scale_factor + 5, (e.x_root, e.y_root)))
             canvas_menu.add_command(label='zoom out', command=lambda: self.zoom(self.scale_factor - 5, (e.x_root, e.y_root)))
             canvas_menu.tk_popup(e.x_root, e.y_root)
@@ -233,7 +234,7 @@ class MatrixBook:
             self.release_all_matrix()
             self.set_pressed_matrix(selected)
 
-        canvas_menu = Menu(self.matrix_canvas, tearoff=False)
+        canvas_menu = tk.Menu(self.matrix_canvas, tearoff=False)
         canvas_menu.add_command(label='Transpose', command=self.create_transpose)
         canvas_menu.add_command(label='Negate', command=self.create_negate)
         canvas_menu.tk_popup(e.x_root, e.y_root)
