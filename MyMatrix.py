@@ -2,22 +2,10 @@ import tkinter as tk
 
 
 class MyMatrix:
-    def draw_matrix(self, scale, row, col, x_pos, y_pos):
-        width = col * scale
-        height = row * scale
-        self.shape = self.canvas.create_rectangle(x_pos, y_pos, x_pos + width, y_pos + height)
-
-        x1, y1, x2, y2 = self.canvas.coords(self.shape)
-        offset_x = (x2 - x1) // 2
-        offset_y = (y2 - y1) // 2
-        self.text_shape = self.canvas.create_text(x1 + offset_x, y1 + offset_y, text=self.text)
-        self.normal_highlight()
-
     """
     Redo this comment.
     """
-    def __init__(self, scale, dimension, pos, grid_pos, canvas, text=None):
-        self.scale = scale
+    def __init__(self, dimension, pos, grid_pos, canvas, text=None):
         self.dimension = dimension
         self.pos = pos
         self.grid_pos = grid_pos
@@ -27,7 +15,6 @@ class MyMatrix:
 
         self.shape = None
         self.text_shape = None
-        self.draw_matrix(scale, dimension[0], dimension[1], pos[0], pos[1])
 
     def set_anchor(self, new_anchor):
         self.anchor = new_anchor
@@ -67,19 +54,13 @@ class MyMatrix:
         self.canvas.itemconfig(self.shape, fill='white')
         self.canvas.itemconfig(self.text_shape, fill='black')
 
-    def re_draw(self):
-        self.draw_matrix(self.scale, self.dimension[0], self.dimension[1], self.pos[0], self.pos[1])
-
     def rename(self, new_name):
         self.text = new_name
         self.canvas.delete(self.shape)
         self.canvas.delete(self.text_shape)
-
-        self.re_draw()
 
     def resize(self, new_dimension):
         self.dimension = new_dimension
         self.canvas.delete(self.shape)
         self.canvas.delete(self.text_shape)
 
-        self.re_draw()

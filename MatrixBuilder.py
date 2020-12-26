@@ -7,41 +7,59 @@ class MatrixBuilder:
         self.master = master
         master.bind('<Configure>', self.resize_canvas)
 
+        # Canvas Initialization
         w = 600
         h = 600
         matx_canvas = tk.Canvas(self.master, width=w, height=h, bg='white')
-        matx_canvas.grid(row=0, column=0, rowspan=50, padx=20, pady=20)
+        matx_canvas.grid(row=0, column=0, rowspan=2, padx=20, pady=20)
         self.master.update_idletasks() # Another Strange Magic Solution
         self.matx_book = MatrixBook(self, matx_canvas, 20, 20)
 
-        """ Create canvas where user can interact with GUI. """
-        row_label = tk.Label(self.master, text="Row: ", font='Helvetica 8 bold')
-        col_label = tk.Label(self.master, text="Col: ", font='Helvetica 8 bold')
-        name_label = tk.Label(self.master, text="Name: ", font='Helvetica 8 bold')
-        self.row_entry = tk.Entry(self.master, width=20)
-        self.col_entry = tk.Entry(self.master, width=20)
-        self.name_entry = tk.Entry(self.master, width=20)
-        row_label.grid(row=0, column=1)
-        col_label.grid(row=1, column=1)
-        name_label.grid(row=2, column=1)
-        self.row_entry.grid(row=0, column=2)
-        self.col_entry.grid(row=1, column=2)
-        self.name_entry.grid(row=2, column=2)
+        # Control Frame Initialization
+        self.matx_control = tk.Frame(self.master)
+        self.matx_control.grid(row=0, column=1)
 
-        butt_custom = tk.Button(self.master, text='ADD the custom matrix', command=self.create_custom_matx)
-        #butt_std = tk.Button(self.master, text='ADD the DEFAULT matrix!', command=self.create_default_matx)
-        butt_delete = tk.Button(self.master, text='DELETE selected matrix', command=self.delete_button)
-        butt_zoom_in = tk.Button(self.master, text='Zoom In', command=lambda: self.matx_book.zoom(self.matx_book.scale_factor + 5))
-        butt_zoom_out = tk.Button(self.master, text='Zoom Out', command=lambda: self.matx_book.zoom(self.matx_book.scale_factor - 5))
-        butt_custom.grid(row=3, column=1, pady=5, columnspan=2)
-        #butt_std.grid(row=4, column=1, pady=5, columnspan=2)
-        butt_delete.grid(row=4, column=1, pady=5, columnspan=2)
-        butt_zoom_in.grid(row=5, column=1, pady=5)
-        butt_zoom_out.grid(row=5, column=2, pady=5, padx=2)
+        row_label = tk.Label(self.matx_control, text="Row: ", font='Helvetica 8 bold')
+        col_label = tk.Label(self.matx_control, text="Col: ", font='Helvetica 8 bold')
+        name_label = tk.Label(self.matx_control, text="Name: ", font='Helvetica 8 bold')
+        self.row_entry = tk.Entry(self.matx_control, width=20)
+        self.col_entry = tk.Entry(self.matx_control, width=20)
+        self.name_entry = tk.Entry(self.matx_control, width=20)
+        row_label.grid(row=0, column=0)
+        col_label.grid(row=1, column=0)
+        name_label.grid(row=2, column=0)
+        self.row_entry.grid(row=0, column=1)
+        self.col_entry.grid(row=1, column=1)
+        self.name_entry.grid(row=2, column=1)
 
+        butt_custom = tk.Button(self.matx_control, text='ADD the custom matrix', command=self.create_custom_matx)
+        butt_delete = tk.Button(self.matx_control, text='DELETE selected matrix', command=self.delete_button)
+        butt_zoom_in = tk.Button(self.matx_control, text='Zoom In', command=lambda: self.matx_book.zoom(self.matx_book.scale_factor + 5))
+        butt_zoom_out = tk.Button(self.matx_control, text='Zoom Out', command=lambda: self.matx_book.zoom(self.matx_book.scale_factor - 5))
+        butt_custom.grid(row=3, column=0, pady=5, columnspan=2)
+        butt_delete.grid(row=4, column=0, pady=5, columnspan=2)
+        butt_zoom_in.grid(row=5, column=0, pady=5)
+        butt_zoom_out.grid(row=5, column=1, pady=5, padx=2)
+
+        # Group Frame Initialization
+        self.group_frame = tk.Frame(self.master)
+        self.group_frame.grid(row=1, column=1)
+
+        self.group_listbox = tk.Listbox(self.group_frame)
+        self.group_listbox.pack()
+
+        butt_add_group = tk.Button(self.group_frame, text='Add Current Group', command=self.add_current_group)
+        butt_delete_group = tk.Button(self.group_frame, text='Delete Group', command=self.delete_group)
+        butt_select_group = tk.Button(self.group_frame, text='Activate Group', command=self.select_group)
+        butt_add_group.pack()
+        butt_delete_group.pack()
+        butt_select_group.pack()
+
+        # Status bar initialization
         self.status = tk.Label(self.master, text='Hello there, Welcome!', bd=1, relief=tk.SUNKEN)
         self.status.grid(row=100, column=0)
 
+        # Menu initialization
         menu = tk.Menu(self.master)
         self.master.config(menu=menu)
 
@@ -60,8 +78,29 @@ class MatrixBuilder:
         file_menu.add_cascade(label='Numpy', command=lambda: self.export_matrix('numpy'))
         file_menu.add_cascade(label='Sparse (COO)', command=lambda: self.export_matrix('coo'))
 
+
+    def add_current_group(self):
+        if self.matx_book.current_group is None:
+            return
+
+        new_name = self.ask_user('group')
+        if not new_name or self.matx_book.group_list.contains(new_name):
+            if new_name is not None:
+                self.update_status('Please Input a valid group name, Duplicate Names and Empty String is not allowed.')
+            return
+        self.matx_book.current_group.set_name(new_name)
+        self.matx_book.group_list.add_group(self.matx_book.current_group)
+        self.group_listbox.insert(0, self.matx_book.current_group.get_name())
+
+    def delete_group(self):
+        self.matx_book.group_list.delete_group(self.group_listbox.get(tk.ANCHOR))
+        self.group_listbox.delete(tk.ANCHOR)
+
+    def select_group(self):
+        self.matx_book.change_group(self.group_listbox.get(tk.ANCHOR))
+
     def resize_canvas(self, e):
-        new_width = self.master.winfo_width() - 400
+        new_width = self.master.winfo_width() - 250
         new_height = self.master.winfo_height() - 100
         self.matx_book.get_canvas().config(width=new_width, height=new_height)
 
@@ -81,15 +120,11 @@ class MatrixBuilder:
             return None
         elif len(name.split()) == 0:
             self.update_status('Please provide a name for your sub-matrix.')
+            return None
 
         return name
 
     """ Some other user widgets. """
-    # todo: this function is obsolete. delete soon
-    def create_default_matx(self):
-        self.create_custom_matx((2, 2))
-        self.update_status(f'Total matrix: {len(self.matx_book.matrix_list)}')
-
     def create_custom_matx(self, dim=None, name=None, grid_pos=None):
         if not dim:
             dim = self.get_dimension_entry()
@@ -97,8 +132,6 @@ class MatrixBuilder:
                 return
         if not name:
             name = self.get_name_entry()
-            if name is None:
-                return
         if not grid_pos:
             pos = (self.matx_book.get_canvas().winfo_width() // 2, self.matx_book.get_canvas().winfo_height() // 2)
             grid_pos = self.matx_book.pos_to_grid(pos)
@@ -110,7 +143,6 @@ class MatrixBuilder:
 
     def delete_button(self):
         self.matx_book.delete_matrix(self.matx_book.pressed_matrix)
-
 
     def reset(self, size=None):
         if not size:
@@ -138,14 +170,14 @@ class MatrixBuilder:
         row, col = query_output
         self.matx_book.row = int(row)
         self.matx_book.col = int(col)
-        self.matx_book.draw_grid(self.matx_book.scale_factor)
+        self.matx_book.draw_grid()
 
         new_dim = self.matx_book.get_dimension()
         self.update_status(f'Resize Successful! Current Matrix Size is: ({new_dim[0]}, {new_dim[1]})')
 
     def ask_user(self, input_type):
         dialog_pop = None
-        if input_type == 'save' or input_type == 'load' or input_type == 'export':
+        if input_type == 'save' or input_type == 'load' or input_type == 'export' or input_type == 'group':
             dialog_pop = NameDialog(self.master, input_type)
         elif input_type == 'resize' or input_type == 'reset':
             dialog_pop = RowColDialog(self.master, input_type)

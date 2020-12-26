@@ -6,7 +6,11 @@ class MyDialog:
         self.parent = parent
         self.pop = tk.Toplevel(parent)
         self.pop.title("Input Query")
-        self.pop.geometry("300x130")
+        offset_w = parent.winfo_x() + parent.winfo_width()//2 - 100
+        offset_h = parent.winfo_y() + parent.winfo_height()//2 - 100
+
+        self.pop.geometry("300x130+%d+%d" % (offset_w, offset_h))
+        self.pop.resizable(width=False, height=False)
 
         self.intro_frame = tk.Frame(self.pop)
         self.intro_frame.pack(pady=3)
@@ -69,6 +73,8 @@ class NameDialog(MyDialog):
             msg = 'Please Input the Name of the Matrix to Load.'
         elif input_type == 'export':
             msg = 'Please Input the Name of the Function'
+        elif input_type == 'group':
+            msg = 'Please Input the Name of the Group'
         super().__init__(parent, msg)
 
         label_name = tk.Label(self.query_frame, text="Name: ", font='Helvetica 8 bold')
