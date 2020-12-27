@@ -26,5 +26,5 @@ ways to convert users' works in the program into useful formats which users can 
 
 Contributor: Taewoo Han\
 Advisor: Dr. Forrest Laine\
-This project was started during UC Berkeley Spring 2020 as a research project. If there is any
+This project started during UC Berkeley Spring 2020 as a research project. If there is any
 issue or recommendation regarding the program, please email me at: *htw1127@gmail.com*

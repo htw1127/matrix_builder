@@ -457,7 +457,12 @@ class MatrixBook:
             self.set_pressed_matrix(temp)
 
     def ctrl_press_LMB(self, e):
-        self.press_LMB(e)
+        self.matrix_canvas.focus_force()
+
+        press_pos = (e.x, e.y)
+        if not self.in_current_group(press_pos):
+            self.erase_group(self.current_group)
+
         self.is_selecting = True
         self.selection_box_anchor = (e.x, e.y)
 
@@ -465,8 +470,10 @@ class MatrixBook:
             press_pos = (e.x, e.y)
             if self.in_shape_range(press_pos, matx):
                 if matx in self.pressed_matrix:
+                    print('Hello')
                     self.set_released_matrix(matx)
                 else:
+                    print('Yello')
                     self.set_pressed_matrix(matx)
                 return
 
