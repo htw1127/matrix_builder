@@ -470,10 +470,8 @@ class MatrixBook:
             press_pos = (e.x, e.y)
             if self.in_shape_range(press_pos, matx):
                 if matx in self.pressed_matrix:
-                    print('Hello')
                     self.set_released_matrix(matx)
                 else:
-                    print('Yello')
                     self.set_pressed_matrix(matx)
                 return
 
