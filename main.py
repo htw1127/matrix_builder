@@ -5,6 +5,7 @@ def main():
     root = tk.Tk()
     root.title('Matrix Builder')
     root.geometry("850x700")
+    root.iconbitmap('Untitled.ico')
     main_window = MatrixBuilder(root)
     root.mainloop()
 

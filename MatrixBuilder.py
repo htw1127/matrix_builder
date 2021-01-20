@@ -5,7 +5,6 @@ from MyDialog import *
 class MatrixBuilder:
     def __init__(self, master):
         self.master = master
-        master.bind('<Configure>', self.resize_canvas)
 
         # Canvas Initialization
         w = 600
@@ -77,6 +76,9 @@ class MatrixBuilder:
         menu.add_cascade(label='Export', menu=file_menu)
         file_menu.add_cascade(label='Numpy', command=lambda: self.export_matrix('numpy'))
         file_menu.add_cascade(label='Sparse (COO)', command=lambda: self.export_matrix('coo'))
+
+        # Bindings for the Builder
+        master.bind('<Configure>', self.resize_canvas)
 
 
     def add_current_group(self):
