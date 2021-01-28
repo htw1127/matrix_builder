@@ -1,2 +1,4 @@
 /.idea
 /__pycache__
+/sparse_matrix_builder.egg-info
+/dist

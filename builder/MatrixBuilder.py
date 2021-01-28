@@ -1,10 +1,13 @@
-from MatrixBook import *
-from MyDialog import *
+from builder.MatrixBook import *
+from builder.MyDialog import *
+import os
+from builder.utils import CUR_DIR
 
 
 class MatrixBuilder:
     def __init__(self, master):
         self.master = master
+
 
         # Canvas Initialization
         w = 600
@@ -211,7 +214,8 @@ class MatrixBuilder:
 
             matx_data += f'{matx.text} {pos_x} {pos_y} {row} {col}\n'
 
-        f = open(f'Saved_Matrix/{file_name}.txt', 'w')
+        file_dir = os.path.join(CUR_DIR, f'Saved_Matrix/{file_name}.txt')
+        f = open(file_dir, 'w')
         f.write(f'{matrix_book.row} {matrix_book.col}\n')
         f.write(matx_data)
         f.close()
@@ -224,7 +228,8 @@ class MatrixBuilder:
             if not file_name:
                 return
 
-        with open(f'Saved_Matrix/{file_name}.txt', 'r') as f:
+        file_dir = os.path.join(CUR_DIR, f'Saved_Matrix/{file_name}.txt')
+        with open(file_dir, 'r') as f:
             row, col = f.readline().split()
             self.reset((int(row), int(col)))
 
@@ -253,7 +258,7 @@ class MatrixBuilder:
 
     # output file requires ** string ==(to)==> numpy ** array dictionary
     def export_numpy_matrix(self, def_name='matrix_func'):
-        result_code = f'import numpy as np\n\n'
+        result_code = f'import numpy as np\n\n\n'
         result_code+= f'def {def_name}(matrix_dict):\n'
         result_code+= f'\tresult = np.zeros(({self.matx_book.row}, {self.matx_book.col}))\n'
         result_code+= f'\n'
@@ -282,7 +287,8 @@ class MatrixBuilder:
         result_code += f'\n'
         result_code += f'\treturn result\n'
 
-        with open(f'output/{def_name}.py', 'w') as f:
+        file_dir = os.path.join(CUR_DIR, f'output/{def_name}.py')
+        with open(file_dir, 'w') as f:
             f.write(result_code)
 
     def export_coo_matrix(self, def_name='matrix_func'):
@@ -312,7 +318,8 @@ class MatrixBuilder:
 
         result_code+= f'\treturn sparse.coo_matrix((np.array(values), (np.array(row_indices), np.array(col_indices))), shape=({self.matx_book.row}, {self.matx_book.col}))\n'
 
-        with open(f'output/{def_name}.py', 'w') as f:
+        file_dir = os.path.join(CUR_DIR, f'output/{def_name}.py')
+        with open(file_dir, 'w') as f:
             f.write(result_code)
 
     def index_helper(self, index_str):

@@ -1,4 +1,4 @@
-from Group import *
+from builder.Group import *
 
 
 class GroupList:

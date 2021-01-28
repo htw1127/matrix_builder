@@ -9,8 +9,8 @@ classifiers = [
 ]
 
 setup(
-    name='sparse_matrix_builder',
-    version='0.0.1',
+    name='sparse-matrix-builder',
+    version='0.0.14',
     description='This program is intended to build sparse matrices in a more intuitive GUI environment.',
     url='',
     author='Taewoo Han',
@@ -18,6 +18,11 @@ setup(
     license='MIT',
     classifiers=classifiers,
     keywords='matrix',
-    packages=find_packages(),
-    install_requires=['numpy', 'scipy', 'tk']
+    packages=['builder'],
+    include_package_data=True,
+    entry_points={
+        "console_scripts": [
+            "build-matrix=builder.__main__:main",
+        ]
+    }
 )

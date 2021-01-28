@@ -1,6 +1,6 @@
 import tkinter as tk
-from MyMatrix import *
-from GroupList import *
+from builder.MyMatrix import *
+from builder.GroupList import *
 
 
 class MatrixBook:

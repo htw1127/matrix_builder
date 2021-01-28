@@ -1,5 +1,6 @@
 import numpy as np
 from scipy import sparse
+import os
 
 """
 NOTE
@@ -7,6 +8,7 @@ Format of the savings
 NAME X_POS Y_POS HEIGHT(row) WIDTH(col)
 """
 
+CUR_DIR = os.getcwd()
 
 def realize_numpy_matrix(file_name, matrix_dict):
     result_matrix = None
