@@ -1,5 +1,12 @@
 from setuptools import setup, find_packages
 
+
+def readme():
+    with open('README.md') as f:
+        readme_file = f.read()
+    return readme_file
+
+
 classifiers = [
     'Development Status :: 3 - Alpha',
     'Intended Audience :: Education',
@@ -10,9 +17,11 @@ classifiers = [
 
 setup(
     name='sparse-matrix-builder',
-    version='0.0.14',
+    version='0.0.3',
     description='This program is intended to build sparse matrices in a more intuitive GUI environment.',
-    url='',
+    long_description=readme(),
+    long_description_content_type='text/markdown',
+    url='https://github.com/htw1127/matrix_builder',
     author='Taewoo Han',
     author_email='htw1127@gmail.com',
     license='MIT',

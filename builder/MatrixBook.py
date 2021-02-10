@@ -1,4 +1,5 @@
 import tkinter as tk
+import os
 from builder.MyMatrix import *
 from builder.GroupList import *
 
@@ -13,17 +14,29 @@ class MatrixBook:
     Binding all the necessary key binds
     """
     def canvas_bind(self):
+        # translates the binding depending on the OS
+        bindings = dict()
+
+        if os.name == 'nt':
+            # Bindings for Windows
+            bindings['RMB'] = 'Button-3'
+        elif os.name == 'posix':
+            # Bindings for Mac/BSD/Linux
+            bindings['RMB'] = 'Button-2'
+
         self.matrix_canvas.bind('<B1-Motion>', self.move)
         self.matrix_canvas.bind('<ButtonRelease-1>', self.release_LMB)
         self.matrix_canvas.bind('<Button-1>', self.press_LMB)
-        self.matrix_canvas.bind('<Control-Button-1>', self.ctrl_press_LMB)
-        self.matrix_canvas.bind('<Control-v>', self.ctrl_v)
-        self.matrix_canvas.bind('<KeyRelease-Control_L>', self.ctrl_release)
         self.matrix_canvas.bind('<Delete>', self.pressed_delete)
-        self.matrix_canvas.bind('<Control-MouseWheel>', self.ctrl_wheel)
+        self.matrix_canvas.bind(f'<{bindings["RMB"]}>', self.press_RMB)
+        self.matrix_canvas.bind('<Control-v>', self.ctrl_v)
         self.matrix_canvas.bind('<Shift-Button-1>', self.shift_LMB)
-        self.matrix_canvas.bind('<Button-3>', self.press_RMB)
+        self.matrix_canvas.bind('<Control-MouseWheel>', self.ctrl_wheel)
+        self.matrix_canvas.bind('<Control-Button-1>', self.ctrl_press_LMB)
+        self.matrix_canvas.bind('<KeyRelease-Control_L>', self.ctrl_release)
+
         self.matrix_canvas.focus_force()
+
 
     def draw_grid(self):
         scale = self.scale_factor

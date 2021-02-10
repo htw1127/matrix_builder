@@ -11,8 +11,21 @@ ways to convert users' works in the program into useful formats which users can 
 
 
 ### Builder Layout
+Readme Will be updated
 
+### How to use
+#### From Command-line console
+```commandline
+build-matrix
+```
 
+#### From Python Context
+```python
+import builder as bd
+
+# To Start the GUI
+bd.main()
+```
 
 ### Helpful Key Bindings
 - **Ctrl + v** : Copy and Paste the currently highlighted matrices

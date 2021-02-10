@@ -8,7 +8,7 @@ Format of the savings
 NAME X_POS Y_POS HEIGHT(row) WIDTH(col)
 """
 
-CUR_DIR = os.getcwd()
+CUR_DIR = os.path.dirname(__file__)
 
 def realize_numpy_matrix(file_name, matrix_dict):
     result_matrix = None
