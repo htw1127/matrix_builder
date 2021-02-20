@@ -33,39 +33,39 @@ bd.main()
 ```
 ## How to Use (Example)
 #### Delete, Create, and Rename Matrix
-![](images/delete_create_rename.gif)
+![](https://github.com/htw1127/matrix_builder/blob/main/images/delete_create_rename.gif)
 - Use **RMB (Two-finger click in Mac)** on canvas to see drop down options.
 - If a matrix is not given a name, its default name is "M + number of total matrix".
 <br/>
 <br/>
   
 #### Zoom In/Out, and Translation
-![](images/zoom_in_out_translate.gif)
+![](https://github.com/htw1127/matrix_builder/blob/main/images/zoom_in_out_translate.gif)
 
 <br/>
 <br/>
 
 #### Resize Matrix
-![](images/resize.gif)
+![](https://github.com/htw1127/matrix_builder/blob/main/images/resize.gif)
 - Reset does the same thing as resize, but it does not save matrices.
 <br/>
 <br/>
 
 #### Group Transpose
-![](images/group_transpose.gif)
+![](https://github.com/htw1127/matrix_builder/blob/main/images/group_transpose.gif)
 -  Group cannot be moved once created, but it can be deleted.
 -  Group List will not be saved after load or reset function.
 <br/>
 <br/>
 
 #### Save and Load
-![](images/save_load.gif)
+![](https://github.com/htw1127/matrix_builder/blob/main/images/save_load.gif)
 - ALL saved/exported files will be placed in the local copy of the builder package. 
 <br/>
 <br/>
 
 #### Export
-![](images/export.gif)
+![](https://github.com/htw1127/matrix_builder/blob/main/images/export.gif)
 - ALL saved/exported files will be placed in the local copy of the builder package. 
 - **Sparse Python** and **Sparse C++** options are for matrices with few zeros.
 <br/>

@@ -17,7 +17,7 @@ classifiers = [
 
 setup(
     name='sparse-matrix-builder',
-    version='0.0.3',
+    version='0.0.4',
     description='This program is intended to build sparse matrices in a more intuitive GUI environment.',
     long_description=readme(),
     long_description_content_type='text/markdown',
