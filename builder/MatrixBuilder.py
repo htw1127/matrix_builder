@@ -8,7 +8,6 @@ class MatrixBuilder:
     def __init__(self, master):
         self.master = master
 
-
         # Canvas Initialization
         w = 600
         h = 600
@@ -78,7 +77,8 @@ class MatrixBuilder:
         file_menu = tk.Menu(menu, tearoff=False)
         menu.add_cascade(label='Export', menu=file_menu)
         file_menu.add_cascade(label='Numpy', command=lambda: self.export_matrix('numpy'))
-        file_menu.add_cascade(label='Sparse (COO)', command=lambda: self.export_matrix('coo'))
+        file_menu.add_cascade(label='Sparse Python (COO)', command=lambda: self.export_matrix('coo'))
+        file_menu.add_cascade(label='Sparse C++', command=lambda: self.export_matrix('cpp'))
 
         # Bindings for the Builder
         master.bind('<Configure>', self.resize_canvas)
@@ -101,11 +101,15 @@ class MatrixBuilder:
         self.matx_book.group_list.delete_group(self.group_listbox.get(tk.ANCHOR))
         self.group_listbox.delete(tk.ANCHOR)
 
+    def delete_all_group(self):
+        self.matx_book.group_list.delete_all()
+        self.group_listbox.delete(0, tk.END)
+
     def select_group(self):
         self.matx_book.change_group(self.group_listbox.get(tk.ANCHOR))
 
     def resize_canvas(self, e):
-        new_width = self.master.winfo_width() - 250
+        new_width = self.master.winfo_width() - 300
         new_height = self.master.winfo_height() - 100
         self.matx_book.get_canvas().config(width=new_width, height=new_height)
 
@@ -158,6 +162,7 @@ class MatrixBuilder:
 
         self.matx_book.delete_matrix(self.matx_book.matrix_list)
         self.matx_book.get_canvas().delete('all')
+        self.delete_all_group()
 
         self.matx_book = MatrixBook(self, self.matx_book.get_canvas(), int(row_size), int(col_size))
 
@@ -228,6 +233,8 @@ class MatrixBuilder:
             if not file_name:
                 return
 
+        self.delete_all_group()
+
         file_dir = os.path.join(CUR_DIR, f'Saved_Matrix/{file_name}.txt')
         with open(file_dir, 'r') as f:
             row, col = f.readline().split()
@@ -253,6 +260,8 @@ class MatrixBuilder:
             self.export_numpy_matrix(name)
         elif format_type == 'coo':
             self.export_coo_matrix(name)
+        elif format_type == 'cpp':
+            self.export_cpp_matrix(name)
 
         self.update_status(f'Export Successful!')
 
@@ -319,6 +328,37 @@ class MatrixBuilder:
         result_code+= f'\treturn sparse.coo_matrix((np.array(values), (np.array(row_indices), np.array(col_indices))), shape=({self.matx_book.row}, {self.matx_book.col}))\n'
 
         file_dir = os.path.join(CUR_DIR, f'output/{def_name}.py')
+        with open(file_dir, 'w') as f:
+            f.write(result_code)
+
+    def export_cpp_matrix(self, def_name='matrix_func'):
+        result_code = f'#include <Eigen/Eigen>\n'
+        result_code+= f'#include <map>\n\n'
+
+        result_code+= f'using namespace std;\n'
+        result_code+= f'using namespace Eigen;\n\n'
+
+        result_code+= f'SparseMatrix<double> {def_name}(map<string, MatrixXd> matrix_dict) ' + '{\n'
+        result_code+= f'\tSparseMatrix<double> result({self.matx_book.row}, {self.matx_book.col});\n'
+
+        for m in self.matx_book.matrix_list:
+            for r in range(m.dimension[0]):
+                for c in range(m.dimension[1]):
+                    index = self.index_helper(m.text)
+                    value = ''
+                    if m.text[-2:] == '.T':
+                        value += f'matrix_dict[\"{index}\"]({c}, {r})'
+                    else:
+                        value += f'matrix_dict[\"{index}\"]({r}, {c})'
+                    if m.text[0] == '-':
+                        value = '-1 * ' + value
+
+                    result_code += f'\tresult.insert({m.grid_pos[1] + r}, {m.grid_pos[0] + c}) = {value};\n'
+
+        result_code += f'\treturn result;\n'
+        result_code += '}'
+
+        file_dir = os.path.join(CUR_DIR, f'output/{def_name}.cpp')
         with open(file_dir, 'w') as f:
             f.write(result_code)
 

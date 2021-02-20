@@ -11,9 +11,14 @@ ways to convert users' works in the program into useful formats which users can 
 
 
 ### Builder Layout
-Readme Will be updated
+![](images/builder_layout.png)
+1. Menu Bar, which the user can saved/load or export the progress in different forms. 
+2. Canvas, which the user can interact with.
+3. Control Frame, which the user can use to configure various aspects of the matrix.
+4. Group Manager, manages 'matrix group'; see below for detailed explanation.
+5. Status Bar
 
-### How to use
+## How to Start
 #### From Command-line console
 ```commandline
 build-matrix
@@ -26,6 +31,45 @@ import builder as bd
 # To Start the GUI
 bd.main()
 ```
+## How to Use (Example)
+#### Delete, Create, and Rename Matrix
+![](images/delete_create_rename.gif)
+- Use **RMB (Two-finger click in Mac)** on canvas to see drop down options.
+- If a matrix is not given a name, its default name is "M + number of total matrix".
+<br/>
+<br/>
+  
+#### Zoom In/Out, and Translation
+![](images/zoom_in_out_translate.gif)
+
+<br/>
+<br/>
+
+#### Resize Matrix
+![](images/resize.gif)
+- Reset does the same thing as resize, but it does not save matrices.
+<br/>
+<br/>
+
+#### Group Transpose
+![](images/group_transpose.gif)
+-  Group cannot be moved once created, but it can be deleted.
+-  Group List will not be saved after load or reset function.
+<br/>
+<br/>
+
+#### Save and Load
+![](images/save_load.gif)
+- ALL saved/exported files will be placed in the local copy of the builder package. 
+<br/>
+<br/>
+
+#### Export
+![](images/export.gif)
+- ALL saved/exported files will be placed in the local copy of the builder package. 
+- **Sparse Python** and **Sparse C++** options are for matrices with few zeros.
+<br/>
+<br/>
 
 ### Helpful Key Bindings
 - **Ctrl + v** : Copy and Paste the currently highlighted matrices
@@ -35,7 +79,8 @@ bd.main()
 - **Shift + LMB Drag** : Can move the matrix inside the canvas
 - **RMB** : Provides useful options depending on a selected entity in the canvas. 
 
-### Example
+<br/>
+<br/>
 
 Contributor: Taewoo Han\
 Advisor: Dr. Forrest Laine\

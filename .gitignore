@@ -2,3 +2,4 @@
 /__pycache__
 /sparse_matrix_builder.egg-info
 /dist
+/build

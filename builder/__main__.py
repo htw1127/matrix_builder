@@ -11,8 +11,8 @@ def main():
 
     root = tk.Tk()
     root.title('Matrix Builder')
-    root.geometry("850x700")
-    file_dir = os.path.join(os.path.dirname(__file__), 'Untitled.ico')
+    root.geometry("900x700+10+10")
+    file_dir = os.path.join(os.path.dirname(__file__), 'logo.ico')
     root.wm_iconbitmap(bitmap=file_dir)
 
     main_window = MatrixBuilder(root)

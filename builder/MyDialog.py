@@ -1,4 +1,5 @@
 import tkinter as tk
+import os
 
 
 class MyDialog:
@@ -10,6 +11,8 @@ class MyDialog:
         offset_h = parent.winfo_y() + parent.winfo_height()//2 - 100
 
         self.pop.geometry("300x130+%d+%d" % (offset_w, offset_h))
+        file_dir = os.path.join(os.path.dirname(__file__), 'logo.ico')
+        self.pop.wm_iconbitmap(bitmap=file_dir)
         self.pop.resizable(width=False, height=False)
 
         self.intro_frame = tk.Frame(self.pop)
@@ -75,6 +78,10 @@ class NameDialog(MyDialog):
             msg = 'Please Input the Name of the Function'
         elif input_type == 'group':
             msg = 'Please Input the Name of the Group'
+        elif input_type == 'save':
+            msg = 'Please Input the Name of this Matrix to be saved.'
+        elif input_type == 'load':
+            msg = 'Please Input the Name of this Matrix to be loaded.'
         super().__init__(parent, msg)
 
         label_name = tk.Label(self.query_frame, text="Name: ", font='Helvetica 8 bold')

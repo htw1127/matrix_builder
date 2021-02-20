@@ -14,6 +14,9 @@ class GroupList:
     def delete_group(self, group_name):
         self.group_dict.pop(group_name)
 
+    def delete_all(self):
+        self.group_dict = dict()
+
     def get_group(self, group_name):
         if not self.contains(group_name):
             return None

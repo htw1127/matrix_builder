@@ -1,0 +1,5 @@
+20 20
+Sparse.T 8 7 3 2
+Sparse 6 6 2 3
+Yay 3 4 2 2
+-dense 9 15 1 3
